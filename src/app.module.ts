@@ -1,8 +1,15 @@
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { ConfigModule } from '@nestjs/config';
-import { databaseConfig } from './configs/configuration.config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { DatabaseConfig, databaseConfig } from './configs/configuration.config';
+import { MongooseModule } from '@nestjs/mongoose';
+import { UsersModule } from './modules/users/users.module';
+import { UserRolesModule } from './modules/user-roles/user-roles.module';
+import { FlashCardsModule } from './modules/flash-cards/flash-cards.module';
+import { TopicsModule } from './modules/topics/topics.module';
+import { CollectionsModule } from './modules/collections/collections.module';
+import { AuthModule } from './modules/auth/auth.module';
 
 @Module({
 	imports: [
@@ -13,6 +20,20 @@ import { databaseConfig } from './configs/configuration.config';
 			cache: true,
 			expandVariables: true,
 		}),
+		MongooseModule.forRootAsync({
+			imports: [ConfigModule],
+			useFactory: async (configService: ConfigService) => ({
+				uri: configService.get<DatabaseConfig>('database').uri,
+				dbName: configService.get<DatabaseConfig>('database').host,
+			}),
+			inject: [ConfigService],
+		}),
+		UsersModule,
+		UserRolesModule,
+		FlashCardsModule,
+		TopicsModule,
+		CollectionsModule,
+		AuthModule,
 	],
 	controllers: [AppController],
 	providers: [AppService],
